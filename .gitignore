@@ -1,3 +1,15 @@
 # VS Code
 .history
 
+# Venv files
+__pycache__
+bin
+include
+lib
+pyvenv.cfg
+
+# Cache files
+*_indicators.txt
+
+# Constants file
+constants.py
