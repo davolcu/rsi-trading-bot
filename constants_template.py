@@ -1,10 +1,10 @@
 # Websocket address on binance API
 SOCKET = 'wss://stream.binance.com:9443/ws/lrcusdt@kline_1m'  # Web socket address. This case LRC / USDT pair (lrcusdt), candle lines (kline) every minute (1m)
 
-# RSI Indicators
+# Strength Indicators
 RSI_PERIOD = 14
-RSI_OVERBOUGHT = 60
-RSI_OVERSOLD = 40
+ROC_PERIOD = 30
+RSI_OVERSOLD = 30
 
 # Trade settings
 TRADE_SYMBOL = 'LRCUSDT' # Trade Pair. This case LRC / USDT
