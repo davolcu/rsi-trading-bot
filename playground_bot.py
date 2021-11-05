@@ -49,7 +49,7 @@ def on_message(ws, message):
             
             if not in_positions:
                 if roc[-2]:
-                    if last_roc > 0:
+                    if last_roc > 0 and close > close_indicators[-2]:
                         roc_modifier += 10
                     
                     if last_roc < 0 and roc_modifier:
