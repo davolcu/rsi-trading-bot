@@ -1,4 +1,5 @@
 import pickle
+from playground_constants import RSI_OVERSOLD
 
 def get_close_indicators(name):
     """ Given the name of a file, it tries to read it and return the saved close indicators from it """
@@ -21,3 +22,9 @@ def set_close_indicators(indicators, indicator, name=''):
         file.close()
 
     return indicators
+
+def get_overbought_limit(modifier):
+    return 100 - get_oversold_limit(modifier)
+
+def get_oversold_limit(modifier):
+    return RSI_OVERSOLD + modifier
