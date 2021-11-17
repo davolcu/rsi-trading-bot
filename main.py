@@ -1,20 +1,18 @@
 import websocket, json, talib, numpy
-from playground_constants import  SOCKET, ROC_PERIOD, RSI_PERIOD, TRADE_SYMBOL, TRADE_QUANTITY
+from constants import  SOCKET, ROC_PERIOD, RSI_PERIOD, TRADE_SYMBOL, BUY_QTY, SELL_QTY
+from binance_connector import BinanceConnector
 from utils import get_close_indicators, set_close_indicators, get_overbought_limit, get_oversold_limit
+
+binance_connector = BinanceConnector()
 
 file_name = '{}_indicators.txt'.format(TRADE_SYMBOL)
 close_indicators = get_close_indicators(file_name)
 in_positions = False
-quantity = TRADE_QUANTITY
 roc_modifier = 0
-
-def on_open(ws):
-    print('Connection opened')
 
 def on_message(ws, message):
     global close_indicators
     global in_positions
-    global quantity
     global roc_modifier
 
     candle = json.loads(message)['k']
@@ -28,20 +26,20 @@ def on_message(ws, message):
             np_close_indicators = numpy.array(close_indicators)
             rsi = talib.RSI(np_close_indicators, timeperiod=RSI_PERIOD)
             roc = talib.ROC(np_close_indicators, timeperiod=ROC_PERIOD)
+
             last_rsi = rsi[-1]
             last_roc = roc[-1]
-            
             print('RSI: {}. ROC: {}. Close Price: {}'.format(last_rsi, last_roc, close))
-
+            
             if last_rsi > get_overbought_limit(roc_modifier) and in_positions:
-                quantity = quantity * close
-                in_positions = False
-
                 print('Selling positions at {}'.format(close))
-                print('Current balance: {}'.format(quantity))
+                order_succeeded = binance_connector.create_sell_order(SELL_QTY, TRADE_SYMBOL)
 
-                if roc_modifier:
-                    roc_modifier -= 10
+                if order_succeeded:
+                    in_positions = False
+
+                    if roc_modifier:
+                        roc_modifier -= 10
 
                 return
             
@@ -55,8 +53,10 @@ def on_message(ws, message):
 
                 if last_rsi < get_oversold_limit(roc_modifier):
                     print('Buying positions at {}'.format(close))
-                    quantity = quantity / close
-                    in_positions = True
+                    order_succeeded = binance_connector.create_buy_order(BUY_QTY, TRADE_SYMBOL)
 
-stream = websocket.WebSocketApp(SOCKET, on_open=on_open, on_message=on_message)
-stream.run_forever()
+                    if order_succeeded:
+                        in_positions = True
+
+ws = websocket.WebSocketApp(SOCKET, on_message=on_message)
+ws.run_forever()

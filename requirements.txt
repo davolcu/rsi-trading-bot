@@ -1,4 +1,5 @@
 python-binance
 TA-Lib
+pandas
 numpy
 websocket_client

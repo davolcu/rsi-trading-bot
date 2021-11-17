@@ -1,62 +1,97 @@
-import websocket, json, talib, numpy
-from constants import  SOCKET, ROC_PERIOD, RSI_PERIOD, TRADE_SYMBOL, BUY_QTY, SELL_QTY
-from binance_connector import BinanceConector
-from utils import get_close_indicators, set_close_indicators, get_overbought_limit, get_oversold_limit
+import numpy, talib
+from constants import RSI_PERIOD, ROC_PERIOD
+from playground_constants import TRADE_QUANTITY
+from utils import get_close_indicators, get_socket, get_overbought_limit, get_oversold_limit
 
-binance_conector = BinanceConector()
+class Bot():
+    socket = ''
+    close_indicators = []
+    quantity = 0
+    modifier = 0
+    in_positions = False
 
-file_name = '{}_indicators.txt'.format(TRADE_SYMBOL)
-close_indicators = get_close_indicators(file_name)
-in_positions = False
-roc_modifier = 0
+    @property
+    def numpy_indicators(self):
+        return numpy.array(self.close_indicators)
 
-def on_message(ws, message):
-    global close_indicators
-    global in_positions
-    global roc_modifier
+    @property
+    def rsi_indicators(self):
+        return talib.RSI(self.numpy_indicators, timeperiod=RSI_PERIOD)
 
-    candle = json.loads(message)['k']
-    is_candle_closed = candle['x']
+    @property
+    def roc_indicators(self):
+        return talib.ROC(self.numpy_indicators, timeperiod=ROC_PERIOD)
 
-    if is_candle_closed:
-        close = float(candle['c'])
-        close_indicators = set_close_indicators(close_indicators, close, file_name)
+    def __init__(self, connector, is_playground=False):
+        symbol = connector.get_top_symbol()
+        
+        self.set_socket(get_socket(symbol))
+        self.set_close_indicators(get_close_indicators(connector.get_client(), symbol))
 
-        if len(close_indicators) > RSI_PERIOD:
-            np_close_indicators = numpy.array(close_indicators)
-            rsi = talib.RSI(np_close_indicators, timeperiod=RSI_PERIOD)
-            roc = talib.ROC(np_close_indicators, timeperiod=ROC_PERIOD)
+        if is_playground:
+            self.set_quantity(TRADE_QUANTITY)
+            return
+    
+    def set_socket(self, socket=''):
+        """ Setter for the socket """
+        self.socket = socket
 
-            last_rsi = rsi[-1]
-            last_roc = roc[-1]
-            print('RSI: {}. ROC: {}. Close Price: {}'.format(last_rsi, last_roc, close))
-            
-            if last_rsi > get_overbought_limit(roc_modifier) and in_positions:
-                print('Selling positions at {}'.format(close))
-                order_succeeded = binance_conector.create_sell_order(SELL_QTY, TRADE_SYMBOL)
+    def get_socket(self):
+        """ Getter for the socket """
+        return self.socket
 
-                if order_succeeded:
-                    in_positions = False
+    def set_close_indicators(self, close_indicators=[]):
+        """ Setter for the close_indicators """
+        self.close_indicators = close_indicators
 
-                    if roc_modifier:
-                        roc_modifier -= 10
+    def get_close_indicators(self):
+        """ Getter for the close_indicators """
+        return self.close_indicators
+    
+    def add_close_indicator(self, close_indicator):
+        """ Adds a new close indicator to the existing list """
+        self.close_indicators.append(close_indicator)
 
-                return
-            
-            if not in_positions:
-                if roc[-2]:
-                    if last_roc > 0 and close > close_indicators[-2]:
-                        roc_modifier += 10
-                    
-                    if last_roc < 0 and roc_modifier:
-                        roc_modifier -= 10
+    def set_quantity(self, quantity=0):
+        """ Setter for the quantity """
+        self.quantity = quantity
 
-                if last_rsi < get_oversold_limit(roc_modifier):
-                    print('Buying positions at {}'.format(close))
-                    order_succeeded = binance_conector.create_buy_order(BUY_QTY, TRADE_SYMBOL)
+    def get_quantity(self):
+        """ Getter for the quantity """
+        return self.quantity
 
-                    if order_succeeded:
-                        in_positions = True
+    def set_modifier(self, modifier=0):
+        """ Setter for the modifier """
+        self.modifier = modifier
 
-ws = websocket.WebSocketApp(SOCKET, on_message=on_message)
-ws.run_forever()
+    def get_modifier(self):
+        """ Getter for the modifier """
+        return self.modifier
+
+    def set_in_positions(self, in_positions=False):
+        """ Setter for the in_positions """
+        self.in_positions = in_positions
+
+    def get_in_positions(self):
+        """ Getter for the in_positions """
+        return self.in_positions
+    
+    def is_ready(self):
+        """ Checks if the bot is ready to start placing orders """
+        return len(self.close_indicators) > RSI_PERIOD
+
+    def should_sell(self, rsi):
+        """ Checks if the bot should sell the positions """
+        return rsi > get_overbought_limit(self.modifier) and self.in_positions
+
+    def should_buy(self, rsi):
+        """ Checks if the bot should buy positions """
+        return rsi < get_oversold_limit(self.modifier)
+
+    def should_increase_modifier(self, roc, close):
+        """ Checks if the bot should increase the limit modifier """
+        return roc >= self.roc_indicators[-2] and close > self.close_indicators[-2]
+
+    def should_decrease_modifier(self, roc):
+        """ Checks if the bot should decrease the limit modifier """
+        return self.modifier and roc < self.roc_indicators[-2]

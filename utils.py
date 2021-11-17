@@ -1,27 +1,28 @@
-import pickle
+import pandas
 from playground_constants import RSI_OVERSOLD
 
-def get_close_indicators(name):
-    """ Given the name of a file, it tries to read it and return the saved close indicators from it """
-    try:
-        file = open(name, 'rb')
-        close_indicators = pickle.load(file)
-        file.close()
-        return close_indicators
-    except OSError as e:
-        return []
+def get_top_symbol(client):
+    """ Given the client, extract the top gainer symbol of cryptos """
+    data_frame = pandas.DataFrame(client.get_ticker())
 
-def set_close_indicators(indicators, indicator, name=''):
-    """ Given a set of indicators, it adds a new one. Also if a file name has been provided, it saves the data to the file """
-    indicators.append(indicator)
+    # Given the data frame, let's exclude the non USDT symbol and the leverage tokens (UP/DOWN)
+    data_frame = data_frame[data_frame.symbol.str.contains('USDT')]
+    data_frame = data_frame[~(data_frame.symbol.str.contains('UP') | data_frame.symbol.str.contains('DOWN'))]
 
-    if name:
-        # Save the indicators to the file
-        file = open(name, 'wb')
-        pickle.dump(indicators, file)
-        file.close()
+    # Now we turn the priceChangePercent to float and get its maximum value in the last 24 hours
+    data_frame.priceChangePercent = pandas.to_numeric(data_frame.priceChangePercent, downcast='float')
+    return data_frame[data_frame.priceChangePercent == data_frame.priceChangePercent.max()].symbol.values[0]
 
-    return indicators
+def get_socket(symbol):
+    """ Given a symbol it returns the websocket url"""
+    return 'wss://stream.binance.com:9443/ws/{}@kline_1m'.format(symbol.lower())
+
+def get_close_indicators(client, symbol):
+    """ Given a client and a symbol, it gets the candle indicators from the last day """
+    candle_indicators = client.get_historical_klines(symbol, '1m', '1 day ago UTC')
+
+    # The [4] position represents the close value
+    return [float(candle[4]) for candle in candle_indicators]
 
 def get_overbought_limit(modifier):
     """ Given the ROC modifier, it calculates the overbought limit """
