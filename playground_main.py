@@ -43,8 +43,12 @@ def on_message(ws, message):
 
                 if bot.should_buy(last_rsi):
                     binance_connector.create_mock_buy_order(bot, close)
-            
-        return
+               
+            return
+
+    if bot.should_reset(binance_connector):       
+        stop(ws)
+        run(bot.get_socket())
 
 
 def run(socket):
@@ -53,8 +57,10 @@ def run(socket):
     stream.run_forever()
 
 def stop(stream):
-    """ Given a websocket stream, it stops the process """
-    stream.stop()
+    """ Given a websocket stream, it stops the process and resets the bot """
+    stream.keep_running = False
+    BinanceConnector.reset_top_symbol(binance_connector)
+    Bot.reset_bot(bot, binance_connector)
 
 if __name__ == '__main__':
     run(bot.get_socket())

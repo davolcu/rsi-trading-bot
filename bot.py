@@ -32,6 +32,15 @@ class Bot():
             self.set_quantity(TRADE_QUANTITY)
             return
     
+    @classmethod
+    def reset_bot(cls, bot, connector):
+        """ Resets the default values of a bot's instance """
+        symbol = connector.get_top_symbol()
+
+        bot.set_socket(get_socket(symbol))
+        bot.set_close_indicators(get_close_indicators(connector.get_client(), symbol))
+        bot.set_modifier()
+    
     def set_socket(self, socket=''):
         """ Setter for the socket """
         self.socket = socket
@@ -95,3 +104,7 @@ class Bot():
     def should_decrease_modifier(self, roc):
         """ Checks if the bot should decrease the limit modifier """
         return self.modifier and roc < self.roc_indicators[-2]
+
+    def should_reset(self, connector):
+        """ Checks if the bot should reset """
+        return connector.should_reset_top_symbol()

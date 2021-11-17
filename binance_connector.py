@@ -10,7 +10,13 @@ class BinanceConnector():
 
     def __init__(self):
         self.set_client(Client(API_KEY, API_SECRET))
-        self.set_top_symbol(get_top_symbol(self.get_client()))
+        self.set_top_symbol(get_top_symbol(self.client))
+
+    @classmethod
+    def reset_top_symbol(cls, binance_connector):
+        """ Recalculates the top_symbol of a connector's instance """
+        client = binance_connector.get_client()
+        binance_connector.set_top_symbol(get_top_symbol(client))
 
     def set_client(self, client=None):
         """ Setter for the client """
@@ -27,6 +33,10 @@ class BinanceConnector():
     def get_top_symbol(self):
         """ Getter for the top_symbol """
         return self.top_symbol
+
+    def should_reset_top_symbol(self):
+        """ Checks if the top symbol should be recalculated """
+        return self.top_symbol != get_top_symbol(self.client)
 
     def create_order(self, qty, symbol, side):
         """ Given the quantity and the currency, it executes an order of the selected type of side """
