@@ -1,12 +1,10 @@
 import websocket, json, talib, numpy
 from playground_constants import  SOCKET, ROC_PERIOD, RSI_PERIOD, TRADE_SYMBOL, TRADE_QUANTITY
-from binance_connector import create_client
 from utils import get_close_indicators, set_close_indicators, get_overbought_limit, get_oversold_limit
 
 file_name = '{}_indicators.txt'.format(TRADE_SYMBOL)
 close_indicators = get_close_indicators(file_name)
 in_positions = False
-client = create_client()
 quantity = TRADE_QUANTITY
 roc_modifier = 0
 
