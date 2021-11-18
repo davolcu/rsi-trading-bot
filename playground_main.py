@@ -44,7 +44,7 @@ def on_message(ws, message):
                 if bot.should_buy(last_rsi):
                     binance_connector.create_mock_buy_order(bot, close)
                
-            return
+        return
 
     if bot.should_reset(binance_connector):       
         stop(ws)

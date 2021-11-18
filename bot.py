@@ -107,4 +107,4 @@ class Bot():
 
     def should_reset(self, connector):
         """ Checks if the bot should reset """
-        return connector.should_reset_top_symbol()
+        return not self.in_positions and connector.should_reset_top_symbol()
