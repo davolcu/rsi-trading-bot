@@ -1,7 +1,7 @@
 import numpy, talib
 from constants import RSI_PERIOD, ROC_PERIOD
 from playground_constants import TRADE_QUANTITY
-from utils import get_close_indicators, get_socket, get_overbought_limit, get_oversold_limit
+from utils import get_usdt_balance, get_close_indicators, get_socket, get_overbought_limit, get_oversold_limit
 
 class Bot():
     socket = ''
@@ -23,14 +23,12 @@ class Bot():
         return talib.ROC(self.numpy_indicators, timeperiod=ROC_PERIOD)
 
     def __init__(self, connector, is_playground=False):
+        client = connector.get_client()
         symbol = connector.get_top_symbol()
         
         self.set_socket(get_socket(symbol))
-        self.set_close_indicators(get_close_indicators(connector.get_client(), symbol))
-
-        if is_playground:
-            self.set_quantity(TRADE_QUANTITY)
-            return
+        self.set_close_indicators(get_close_indicators(client, symbol))
+        self.set_quantity(TRADE_QUANTITY if is_playground else get_usdt_balance(client))
     
     @classmethod
     def reset_bot(cls, bot, connector):

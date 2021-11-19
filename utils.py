@@ -1,5 +1,12 @@
 import pandas
-from playground_constants import RSI_OVERSOLD
+from constants import RSI_OVERSOLD
+
+def get_usdt_balance(client):
+    """ Given the client, it extracts the quantity of usdt in the account's balance """
+    balances = client.get_account()['balances']
+    usdt_balance = next(balance for balance in balances if balance['asset'] == 'USDT')
+    
+    return float(usdt_balance['free'])
 
 def get_top_symbol(client):
     """ Given the client, extract the top gainer symbol of cryptos """
@@ -31,3 +38,8 @@ def get_overbought_limit(modifier):
 def get_oversold_limit(modifier):
     """ Given the ROC modifier, it calculates the oversold limit """
     return RSI_OVERSOLD + modifier
+
+def get_real_quantity(order):
+    """ Given an order, it gets the transferred quantity minus the commission """
+    transaction = order['fills'][0]
+    return float(transaction['qty']) - float(transaction['commission'])

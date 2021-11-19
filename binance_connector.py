@@ -1,7 +1,7 @@
 from binance.client import Client
 from binance.enums import SIDE_SELL, SIDE_BUY, ORDER_TYPE_MARKET
 from constants import API_KEY, API_SECRET
-from utils import get_top_symbol
+from utils import get_top_symbol, get_real_quantity
 
 class BinanceConnector():
     client = None
@@ -11,6 +11,24 @@ class BinanceConnector():
     def __init__(self):
         self.set_client(Client(API_KEY, API_SECRET))
         self.set_top_symbol(get_top_symbol(self.client))
+    
+    def _post_sell_order_hook(self, bot, quantity, close):
+        """ Actions that should be executed right after placing a sell order """
+        modifier = bot.get_modifier()
+        bot.set_quantity(quantity)
+        bot.set_in_positions()
+        
+        if modifier:
+            bot.set_modifier(modifier - 10)
+                
+        print('Selling positions at {}'.format(close))
+        print('Current balance: {}'.format(quantity)) 
+
+    def _post_buy_order_hook(self, bot, quantity, close):
+        """ Actions that should be executed right after placing a buy order """
+        bot.set_quantity(quantity)
+        bot.set_in_positions(True)
+        print('Buying positions at {}'.format(close))
 
     @classmethod
     def reset_top_symbol(cls, binance_connector):
@@ -38,39 +56,41 @@ class BinanceConnector():
         """ Checks if the top symbol should be recalculated """
         return self.top_symbol != get_top_symbol(self.client)
 
-    def create_order(self, qty, symbol, side):
-        """ Given the quantity and the currency, it executes an order of the selected type of side """
-        try:
-            self.client.create_order(symbol=symbol, side=side, type=self.order_type, quantity=qty)
-            return True
-        except Exception as e:
-            print(e)
-            return False
-    
-    def create_sell_order(self, qty, symbol):
-        """ Given the quantity and the currency, it executes a selling order """
-        return self.create_order(qty, symbol, SIDE_SELL)
+    def create_order(self, quantity, side):
+        """ Given the quantity, it executes an order of the selected type of side """
+        symbol = self.top_symbol
+        type = self.order_type
 
-    def create_buy_order(self, qty, symbol):
-        """ Given the quantity and the currency, it executes a buying order """
-        return self.create_order(qty, symbol, SIDE_BUY)
+        try:
+            if side == SIDE_BUY:
+                return self.client.create_order(symbol=symbol, side=side, type=type, quoteOrderQty=quantity)
+            return self.client.create_order(symbol=symbol, side=side, type=type, quantity=quantity)
+        except Exception as error:
+            print(error)
+            return False
+
+    def create_sell_order(self, bot, close):
+        """ Given the bot and the close value, it places a sell order """
+        quantity = bot.get_quantity()
+        order = self.create_order(quantity, SIDE_SELL)
+                
+        if order:
+            self._post_sell_order_hook(bot, get_real_quantity(order), close)  
+
+    def create_buy_order(self, bot, close):
+        """ Given the bot and the close value, it places a buy order """
+        quantity = bot.get_quantity()
+        order = self.create_order(quantity, SIDE_BUY)
+        
+        if order:
+            self._post_buy_order_hook(bot, get_real_quantity(order), close)
 
     def create_mock_sell_order(self, bot, close):
         """ Given the bot and the close value, it places a mocked sell order """
-        modifier = bot.get_modifier()
         quantity = bot.get_quantity() * close
-        
-        bot.set_quantity(quantity)
-        bot.set_in_positions()
-        
-        if modifier:
-            bot.set_modifier(modifier - 10)
-                
-        print('Selling positions at {}'.format(close))
-        print('Current balance: {}'.format(quantity))       
+        self._post_sell_order_hook(bot, quantity, close)
 
     def create_mock_buy_order(self, bot, close):
         """ Given the bot and the close value, it places a mocked buy order """
-        bot.set_quantity(bot.get_quantity() / close)
-        bot.set_in_positions(True)
-        print('Buying positions at {}'.format(close))
+        quantity = bot.get_quantity() / close
+        self._post_buy_order_hook(bot, quantity, close)
