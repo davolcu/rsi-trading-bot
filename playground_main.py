@@ -1,5 +1,5 @@
 import websocket, json
-from bots.bot import Bot
+from bots.momentum_bot import Bot
 from connectors.binance import BinanceConnector
 
 # Create the binance connector instance
