@@ -1,5 +1,5 @@
 import pandas
-from constants import RSI_OVERSOLD
+from constants.constants import RSI_OVERSOLD
 
 def get_usdt_balance(client):
     """ Given the client, it extracts the quantity of usdt in the account's balance """

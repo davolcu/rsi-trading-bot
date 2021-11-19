@@ -1,7 +1,7 @@
 from binance.client import Client
 from binance.enums import SIDE_SELL, SIDE_BUY, ORDER_TYPE_MARKET
-from constants import API_KEY, API_SECRET
-from utils import get_top_symbol, get_real_quantity
+from constants.constants import API_KEY, API_SECRET
+from utils.utils import get_top_symbol, get_real_quantity
 
 class BinanceConnector():
     client = None

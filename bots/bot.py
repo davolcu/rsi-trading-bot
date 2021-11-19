@@ -1,7 +1,7 @@
 import numpy, talib
-from constants import RSI_PERIOD, ROC_PERIOD
-from playground_constants import TRADE_QUANTITY
-from utils import get_usdt_balance, get_close_indicators, get_socket, get_overbought_limit, get_oversold_limit
+from constants.constants import RSI_PERIOD, ROC_PERIOD
+from constants.playground_constants import TRADE_QUANTITY
+from utils.utils import get_usdt_balance, get_close_indicators, get_socket, get_overbought_limit, get_oversold_limit
 
 class Bot():
     socket = ''

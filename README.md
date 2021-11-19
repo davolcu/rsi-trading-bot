@@ -19,10 +19,10 @@ pip3 install -r requirements.txt
 
 3. Rename yout constants_template.py as constants.py
 
-4. Configure the file with the trade pairs and qtys
+4. Configure the file with your API Keys
 
 5. Run the project
 
 ```python
-python3 bot.py
+python3 main.py # or playground_main in case you want to test
 ```

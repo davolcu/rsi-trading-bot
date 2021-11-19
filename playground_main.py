@@ -1,6 +1,6 @@
 import websocket, json
-from bot import Bot
-from binance_connector import BinanceConnector
+from bots.bot import Bot
+from connectors.binance import BinanceConnector
 
 # Create the binance connector instance
 binance_connector = BinanceConnector()
