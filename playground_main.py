@@ -48,7 +48,6 @@ def on_message(ws, message):
         stop(ws)
         run(bot.get_socket())
 
-
 def run(socket):
     """ Given the socket, it runs the websocket stream """
     stream = websocket.WebSocketApp(socket, on_open=on_open, on_message=on_message)

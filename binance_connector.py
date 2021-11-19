@@ -88,9 +88,11 @@ class BinanceConnector():
     def create_mock_sell_order(self, bot, close):
         """ Given the bot and the close value, it places a mocked sell order """
         quantity = bot.get_quantity() * close
+        quantity = quantity - (quantity / 1000)
         self._post_sell_order_hook(bot, quantity, close)
 
     def create_mock_buy_order(self, bot, close):
         """ Given the bot and the close value, it places a mocked buy order """
         quantity = bot.get_quantity() / close
+        quantity = quantity - (quantity / 1000)
         self._post_buy_order_hook(bot, quantity, close)
