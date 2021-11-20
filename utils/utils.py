@@ -43,3 +43,15 @@ def get_real_quantity(order):
     """ Given an order, it gets the transferred quantity minus the commission """
     transaction = order['fills'][0]
     return float(transaction['qty']) - float(transaction['commission'])
+
+def get_lot_size(client, symbol):
+    """ Given a client and a symbol, it gets the minimum lot size for the transactions """
+    symbol_info = client.get_symbol_info(symbol)
+    return float(symbol_info['filters'][2]['minQty'])
+
+def get_sized_quantity(bot):
+    """ Given a bot, it extracts the quantity and the lot size, then applies the math """
+    quantity = bot.get_quantity()
+    lot_size = bot.get_lot_size()
+    factor = int(quantity / lot_size)
+    return lot_size * factor

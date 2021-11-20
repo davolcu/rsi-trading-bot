@@ -1,13 +1,15 @@
 import numpy, talib
 from constants.constants import RSI_PERIOD, ROC_PERIOD
 from constants.playground_constants import TRADE_QUANTITY
-from utils.utils import get_usdt_balance, get_close_indicators, get_socket, get_overbought_limit, get_oversold_limit
+from utils.utils import get_usdt_balance, get_close_indicators, get_socket, get_overbought_limit, \
+    get_oversold_limit, get_lot_size
 
 class Bot():
     socket = ''
     close_indicators = []
     quantity = 0
     modifier = 0
+    lot_size = 0
     in_positions = False
 
     @property
@@ -29,15 +31,18 @@ class Bot():
         self.set_socket(get_socket(symbol))
         self.set_close_indicators(get_close_indicators(client, symbol))
         self.set_quantity(TRADE_QUANTITY if is_playground else get_usdt_balance(client))
+        self.set_lot_size(get_lot_size(client, symbol))
     
     @classmethod
     def reset_bot(cls, bot, connector):
         """ Resets the default values of a bot's instance """
+        client = connector.get_client()
         symbol = connector.get_top_symbol()
 
         bot.set_socket(get_socket(symbol))
-        bot.set_close_indicators(get_close_indicators(connector.get_client(), symbol))
+        bot.set_close_indicators(get_close_indicators(client, symbol))
         bot.set_modifier()
+        bot.set_lot_size(get_lot_size(client, symbol))
     
     def set_socket(self, socket=''):
         """ Setter for the socket """
@@ -74,6 +79,14 @@ class Bot():
     def get_modifier(self):
         """ Getter for the modifier """
         return self.modifier
+
+    def set_lot_size(self, lot_size=0):
+        """ Setter for the lot size """
+        self.lot_size = lot_size
+
+    def get_lot_size(self):
+        """ Getter for the lot size """
+        return self.lot_size
 
     def set_in_positions(self, in_positions=False):
         """ Setter for the in_positions """

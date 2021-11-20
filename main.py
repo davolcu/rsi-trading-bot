@@ -59,5 +59,5 @@ def stop(stream):
     BinanceConnector.reset_top_symbol(binance_connector)
     Bot.reset_bot(bot, binance_connector)
 
-# if __name__ == '__main__':
-#     run(bot.get_socket())
+if __name__ == '__main__':
+    run(bot.get_socket())

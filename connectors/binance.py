@@ -1,7 +1,7 @@
 from binance.client import Client
 from binance.enums import SIDE_SELL, SIDE_BUY, ORDER_TYPE_MARKET
 from constants.constants import API_KEY, API_SECRET
-from utils.utils import get_top_symbol, get_real_quantity
+from utils.utils import get_top_symbol, get_real_quantity, get_sized_quantity
 
 class BinanceConnector():
     client = None
@@ -71,7 +71,7 @@ class BinanceConnector():
 
     def create_sell_order(self, bot, close):
         """ Given the bot and the close value, it places a sell order """
-        quantity = bot.get_quantity()
+        quantity = get_sized_quantity(bot)
         order = self.create_order(quantity, SIDE_SELL)
                 
         if order:
