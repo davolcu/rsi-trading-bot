@@ -8,9 +8,9 @@ class BinanceConnector():
     top_symbol = ''
     order_type = ORDER_TYPE_MARKET
 
-    def __init__(self):
+    def __init__(self, top_symbol=None):
         self.set_client(Client(API_KEY, API_SECRET))
-        self.set_top_symbol(get_top_symbol(self.client))
+        self.set_top_symbol(top_symbol if top_symbol else get_top_symbol(self.client))
     
     def _post_sell_order_hook(self, bot, quantity, close):
         """ Actions that should be executed right after placing a sell order """

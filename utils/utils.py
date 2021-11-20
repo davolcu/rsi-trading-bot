@@ -24,9 +24,9 @@ def get_socket(symbol):
     """ Given a symbol it returns the websocket url"""
     return 'wss://stream.binance.com:9443/ws/{}@kline_1m'.format(symbol.lower())
 
-def get_close_indicators(client, symbol):
+def get_close_indicators(client, symbol, interval='1m', period='1 day ago UTC'):
     """ Given a client and a symbol, it gets the candle indicators from the last day """
-    candle_indicators = client.get_historical_klines(symbol, '1m', '1 day ago UTC')
+    candle_indicators = client.get_historical_klines(symbol, interval, period)
 
     # The [4] position represents the close value
     return [float(candle[4]) for candle in candle_indicators]
