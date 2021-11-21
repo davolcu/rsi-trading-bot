@@ -1,7 +1,7 @@
 from binance.client import Client
 from binance.enums import SIDE_SELL, SIDE_BUY, ORDER_TYPE_MARKET
 from constants.constants import API_KEY, API_SECRET
-from utils.utils import get_top_symbol, get_real_quantity, get_sized_quantity
+from utils.utils import get_top_symbol, get_usdt_balance, get_sized_quantity
 
 class BinanceConnector():
     client = None
@@ -62,8 +62,6 @@ class BinanceConnector():
         type = self.order_type
 
         try:
-            if side == SIDE_BUY:
-                return self.client.create_order(symbol=symbol, side=side, type=type, quoteOrderQty=quantity)
             return self.client.create_order(symbol=symbol, side=side, type=type, quantity=quantity)
         except Exception as error:
             print(error)
@@ -71,19 +69,18 @@ class BinanceConnector():
 
     def create_sell_order(self, bot, close):
         """ Given the bot and the close value, it places a sell order """
-        quantity = get_sized_quantity(bot)
-        order = self.create_order(quantity, SIDE_SELL)
+        order = self.create_order(bot.get_quantity(), SIDE_SELL)
                 
         if order:
-            self._post_sell_order_hook(bot, get_real_quantity(order), close)  
+            self._post_sell_order_hook(bot, get_usdt_balance(self.client), close)  
 
     def create_buy_order(self, bot, close):
         """ Given the bot and the close value, it places a buy order """
-        quantity = bot.get_quantity()
+        quantity = get_sized_quantity(bot, close)
         order = self.create_order(quantity, SIDE_BUY)
         
         if order:
-            self._post_buy_order_hook(bot, get_real_quantity(order), close)
+            self._post_buy_order_hook(bot, quantity, close)
 
     def create_mock_sell_order(self, bot, close):
         """ Given the bot and the close value, it places a mocked sell order """
