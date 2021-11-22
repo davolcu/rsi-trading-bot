@@ -1,7 +1,7 @@
 from binance.client import Client
 from binance.enums import SIDE_SELL, SIDE_BUY, ORDER_TYPE_MARKET
 from constants.constants import API_KEY, API_SECRET
-from utils.utils import get_top_symbol, get_usdt_balance, get_sized_quantity
+from utils.utils import get_top_symbol, get_usdt_balance, get_sized_quantity, get_lot_size
 
 class BinanceConnector():
     client = None
@@ -16,6 +16,7 @@ class BinanceConnector():
         """ Actions that should be executed right after placing a sell order """
         modifier = bot.get_modifier()
         bot.set_quantity(quantity)
+        bot.set_buy_price()
         bot.set_in_positions()
         
         if modifier:
@@ -27,6 +28,7 @@ class BinanceConnector():
     def _post_buy_order_hook(self, bot, quantity, close):
         """ Actions that should be executed right after placing a buy order """
         bot.set_quantity(quantity)
+        bot.set_buy_price(close)
         bot.set_in_positions(True)
         print('Buying positions at {}'.format(close))
 
@@ -81,15 +83,16 @@ class BinanceConnector():
         
         if order:
             self._post_buy_order_hook(bot, quantity, close)
+            return
+        
+        bot.modifier -= 10 if bot.modifier else 0
 
     def create_mock_sell_order(self, bot, close):
         """ Given the bot and the close value, it places a mocked sell order """
         quantity = bot.get_quantity() * close
-        quantity = quantity - (quantity / 1000)
         self._post_sell_order_hook(bot, quantity, close)
 
     def create_mock_buy_order(self, bot, close):
         """ Given the bot and the close value, it places a mocked buy order """
         quantity = bot.get_quantity() / close
-        quantity = quantity - (quantity / 1000)
         self._post_buy_order_hook(bot, quantity, close)

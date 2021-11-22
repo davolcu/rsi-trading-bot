@@ -5,8 +5,10 @@ def get_usdt_balance(client):
     """ Given the client, it extracts the quantity of usdt in the account's balance """
     balances = client.get_account()['balances']
     usdt_balance = next(balance for balance in balances if balance['asset'] == 'USDT')
+    free_balance = float(usdt_balance['free'])
     
-    return float(usdt_balance['free'])
+    # We remove a 5% of the total balance as margin
+    return free_balance - free_balance * 0.05
 
 def get_top_symbol(client):
     """ Given the client, extract the top gainer symbol of cryptos """
@@ -46,7 +48,7 @@ def get_lot_size(client, symbol):
 
 def get_sized_quantity(bot, close):
     """ Given a bot and the close value, it extracts the quantity and the lot size, then applies the math """
-    quantity = bot.get_quantity() * close
+    quantity = bot.get_quantity() / close
     lot_size = bot.get_lot_size()
     factor = int(quantity / lot_size)
     return lot_size * factor

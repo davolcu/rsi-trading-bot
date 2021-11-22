@@ -8,6 +8,7 @@ class Bot():
     socket = ''
     close_indicators = []
     quantity = 0
+    buy_price = 0
     modifier = 0
     lot_size = 0
     in_positions = False
@@ -72,6 +73,14 @@ class Bot():
         """ Getter for the quantity """
         return self.quantity
 
+    def set_buy_price(self, buy_price=0):
+        """ Setter for the buy price """
+        self.buy_price = buy_price
+
+    def get_buy_price(self):
+        """ Getter for the buy price """
+        return self.buy_price
+
     def set_modifier(self, modifier=0):
         """ Setter for the modifier """
         self.modifier = modifier
@@ -100,9 +109,16 @@ class Bot():
         """ Checks if the bot is ready to start placing orders """
         return len(self.close_indicators) > RSI_PERIOD
 
-    def should_sell(self, rsi):
+    def should_sell(self, rsi, close):
         """ Checks if the bot should sell the positions """
-        return rsi > get_overbought_limit(self.modifier) and self.in_positions
+        if not self.in_positions:
+            return False
+    
+        # Execute an stop loss check first of all
+        if self.buy_price and (self.buy_price * 0.95 > close):
+            return True
+        
+        return rsi > get_overbought_limit(self.modifier)
 
     def should_buy(self, rsi):
         """ Checks if the bot should buy positions """

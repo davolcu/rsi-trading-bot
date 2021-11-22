@@ -27,7 +27,7 @@ def on_message(ws, message):
             
             print('RSI: {}. ROC: {}. Close Price: {}'.format(last_rsi, last_roc, close))
 
-            if bot.should_sell(last_rsi):
+            if bot.should_sell(last_rsi, close):
                 binance_connector.create_sell_order(bot, close)
                 return
             

@@ -37,7 +37,7 @@ def backtest():
             last_rsi = rsi_indicators[-1]
             last_roc = roc_indicators[-1]
             
-            if bot.should_sell(last_rsi):
+            if bot.should_sell(last_rsi, close):
                 binance_connector.create_mock_sell_order(bot, close)
                 continue
             
