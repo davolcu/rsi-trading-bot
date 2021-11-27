@@ -46,10 +46,10 @@ def backtest():
                 
                 if roc_indicators[-2]:
                     if bot.should_increase_modifier(last_roc, close):
-                        bot.set_modifier(modifier + 10)
+                        bot.set_modifier(modifier + 15)
                     
                     if bot.should_decrease_modifier(last_roc):
-                        bot.set_modifier(modifier - 10)
+                        bot.set_modifier(modifier - 15)
 
                 if bot.should_buy(last_rsi):
                     binance_connector.create_mock_buy_order(bot, close)

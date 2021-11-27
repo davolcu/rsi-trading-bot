@@ -45,10 +45,19 @@ def get_lot_size(client, symbol):
     """ Given a client and a symbol, it gets the minimum lot size for the transactions """
     symbol_info = client.get_symbol_info(symbol)
     return float(symbol_info['filters'][2]['minQty'])
+    
+def get_real_quantity(order):
+    """ Given an order, it gets the transferred quantity minus the commission """
+    quantity = 0
+
+    for transaction in order['fills']:
+        quantity += float(transaction['qty'])
+
+    return quantity
 
 def get_sized_quantity(bot, close):
     """ Given a bot and the close value, it extracts the quantity and the lot size, then applies the math """
     quantity = bot.get_quantity() / close
     lot_size = bot.get_lot_size()
     factor = int(quantity / lot_size)
-    return lot_size * factor
+    return int(lot_size * factor)

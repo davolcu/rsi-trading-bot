@@ -10,6 +10,7 @@ bot = Bot(binance_connector)
 def on_open(ws):
     """ Prints a message confirming the connection opening """
     print('Connection stablished. Currently trading {}'.format(binance_connector.get_top_symbol()))
+    print('Initial balance: {}'.format(bot.get_quantity()))
 
 def on_message(ws, message):
     candle = json.loads(message)['k']
@@ -36,10 +37,10 @@ def on_message(ws, message):
                 
                 if roc_indicators[-2]:
                     if bot.should_increase_modifier(last_roc, close):
-                        bot.set_modifier(modifier + 10)
+                        bot.set_modifier(modifier + 15)
                     
                     if bot.should_decrease_modifier(last_roc):
-                        bot.set_modifier(modifier - 10)
+                        bot.set_modifier(modifier - 15)
 
                 if bot.should_buy(last_rsi):
                     binance_connector.create_buy_order(bot, close)

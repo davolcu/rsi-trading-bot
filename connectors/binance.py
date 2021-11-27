@@ -1,7 +1,7 @@
 from binance.client import Client
 from binance.enums import SIDE_SELL, SIDE_BUY, ORDER_TYPE_MARKET
 from constants.constants import API_KEY, API_SECRET
-from utils.utils import get_top_symbol, get_usdt_balance, get_sized_quantity, get_lot_size
+from utils.utils import get_top_symbol, get_usdt_balance, get_sized_quantity
 
 class BinanceConnector():
     client = None
@@ -20,7 +20,7 @@ class BinanceConnector():
         bot.set_in_positions()
         
         if modifier:
-            bot.set_modifier(modifier - 10)
+            bot.set_modifier(modifier - 15)
                 
         print('Selling positions at {}'.format(close))
         print('Current balance: {}'.format(quantity)) 
@@ -85,7 +85,7 @@ class BinanceConnector():
             self._post_buy_order_hook(bot, quantity, close)
             return
         
-        bot.modifier -= 10 if bot.modifier else 0
+        bot.modifier -= 15 if bot.modifier else 0
 
     def create_mock_sell_order(self, bot, close):
         """ Given the bot and the close value, it places a mocked sell order """
